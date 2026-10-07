@@ -1,0 +1,28 @@
+# Operating System Files
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.venv
+venv/
+
+# CAD / FreeCAD backup and lock files
+*.FCStd1
+*.FCStd2
+*.FCStd3
+*.FCStd?
+*.lock
+*.~lock.*
+
+# Slicer G-code & print jobs
+*.gcode
+*.bgcode
+*.ufp
+
+# Editor configurations
+.vscode/
+.idea/
