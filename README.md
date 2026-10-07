@@ -11,16 +11,29 @@ This repository features:
 - **Parametric OpenSCAD Customizer**: Adjust brush knot diameters ($22\,\text{mm}$ to $34\,\text{mm}$), dual-line personalized debossed text, and vector emblems.
 - **Solid Perimeter Generation**: Eliminates hand-filing and prevents ugly hollow infill cavities from being exposed.
 - **Pre-Rendered Models**: Ready-to-slice STLs and CAD STEP files for standard $24\,\text{mm}$, $28.5\,\text{mm}$, and $30\,\text{mm}$ shaving brushes.
+- **Studio Rendering Pipeline**: Built-in FreeCAD & VTK PBR rendering script to generate publication-grade showcase images with zero GPU dependencies.
 
 ---
 
-## 📸 Overview & Features
+## 🎨 Studio Product Showcase
+
+| Studio Hero View (Upright) | Top Functional Overview |
+| :---: | :---: |
+| ![Studio Hero View](docs/images/render_hero_studio.png) | ![Top Functional Overview](docs/images/render_top_overview.png) |
+
+| Personalized Bottom Branding (Debossed) | Fast-Print Flat-Side Bed Adhesion (PEI Plate) |
+| :---: | :---: |
+| ![Personalized Bottom Branding](docs/images/render_bottom_branding.png) | ![Fast-Print Bed Adhesion](docs/images/render_flatside_bed.png) |
+
+---
+
+## 📸 Technical Analyses & Diagrams
 
 | Fast-Print Flat Orientation (2h 28m) | Draft-Angle Bed Alignment (17.3 cm² Contact) |
 | :---: | :---: |
 | ![Orientation Comparison](docs/images/orientation_comparison.png) | ![Bed Alignment Verification](docs/images/true_side_alignment_verification.png) |
 
-| OpenSCAD Customizer & Bottom Branding | Parametric Knot Cross-Sections |
+| OpenSCAD Customizer UI | Parametric Knot Cross-Sections |
 | :---: | :---: |
 | ![Bottom Customizer Preview](docs/images/bottom_customizer_preview.png) | ![Brush Knot Cross Sections](docs/images/brush_sections.png) |
 
@@ -103,6 +116,18 @@ Create a fully custom holder tailored to your exact brush model and personalized
 
 ---
 
+## 📸 Re-Generating Studio Renders (FreeCAD + VTK)
+
+To re-render the studio images at 1080p with physically based PBR lighting:
+
+```bash
+& "C:\Program Files\FreeCAD 1.1\bin\python.exe" scripts/render_studio_freecad.py
+```
+
+This headless pipeline runs completely CPU/OpenGL offscreen, ensuring 100% reliable output on any workstation without GPU dependency.
+
+---
+
 ## 💻 Automated Batch Generation (Python)
 
 If you have multiple brushes or want to batch-export a catalog of models:
@@ -111,7 +136,7 @@ If you have multiple brushes or want to batch-export a catalog of models:
 python batch_generate_holders.py
 ```
 
-This script invokes OpenSCAD in headless CLI mode (`openscad.com -o output.stl -D ...`) and builds a set of custom variations in parallel.
+This script invokes OpenSCAD in headless CLI mode (`openscad.com -o output.stl -D ...`) and builds custom variations in parallel.
 
 ---
 
