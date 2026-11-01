@@ -1,0 +1,140 @@
+﻿name: Customize & Generate 3D Model
+
+on:
+  workflow_dispatch:
+    inputs:
+      knot_diameter:
+        description: 'Shaving Brush Knot Diameter (mm, between 22.0 and 34.0)'
+        required: true
+        default: '28.5'
+        type: choice
+        options:
+          - '24.0'
+          - '26.0'
+          - '28.0'
+          - '28.5'
+          - '30.0'
+          - '32.0'
+      text_line_1:
+        description: 'Primary Name / Personal Branding (e.g. TUMESH)'
+        required: true
+        default: 'TUMESH'
+        type: string
+      text_line_2:
+        description: 'Secondary Text / Brush Hair Type (e.g. 30mm Silvertip)'
+        required: false
+        default: '30mm Silvertip'
+        type: string
+      logo_type:
+        description: 'Bottom Debossed Emblem'
+        required: true
+        default: 'Brush'
+        type: choice
+        options:
+          - 'Brush'
+          - 'Razor'
+          - 'Crown'
+          - 'Star'
+          - 'None'
+      print_orientation:
+        description: 'Print Orientation'
+        required: true
+        default: 'Flat-Side (Fast 2.5h)'
+        type: choice
+        options:
+          - 'Flat-Side (Fast 2.5h)'
+          - 'Upright (Standard 4.2h)'
+      deboss_depth:
+        description: 'Deboss Engraving Depth in mm (0.4 to 1.5)'
+        required: true
+        default: '0.8'
+        type: string
+
+  repository_dispatch:
+    types: [generate_custom_holder]
+
+jobs:
+  build-model:
+    name: Compile Custom STL
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install OpenSCAD
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openscad
+
+      - name: Determine Parameters
+        id: params
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "KNOT=${{ github.event.client_payload.knot_diameter || '28.5' }}" >> $GITHUB_ENV
+            echo "LINE1=${{ github.event.client_payload.text_line_1 || 'TUMESH' }}" >> $GITHUB_ENV
+            echo "LINE2=${{ github.event.client_payload.text_line_2 || '30mm Silvertip' }}" >> $GITHUB_ENV
+            echo "LOGO=${{ github.event.client_payload.logo_type || 'Brush' }}" >> $GITHUB_ENV
+            echo "ORIENTATION=${{ github.event.client_payload.print_orientation || 'Flat-Side (Fast 2.5h)' }}" >> $GITHUB_ENV
+            echo "DEBOSS=${{ github.event.client_payload.deboss_depth || '0.8' }}" >> $GITHUB_ENV
+          else
+            echo "KNOT=${{ github.event.inputs.knot_diameter }}" >> $GITHUB_ENV
+            echo "LINE1=${{ github.event.inputs.text_line_1 }}" >> $GITHUB_ENV
+            echo "LINE2=${{ github.event.inputs.text_line_2 }}" >> $GITHUB_ENV
+            echo "LOGO=${{ github.event.inputs.logo_type }}" >> $GITHUB_ENV
+            echo "ORIENTATION=${{ github.event.inputs.print_orientation }}" >> $GITHUB_ENV
+            echo "DEBOSS=${{ github.event.inputs.deboss_depth }}" >> $GITHUB_ENV
+          fi
+
+      - name: Compile Custom Model via OpenSCAD
+        run: |
+          CLEAN_NAME=$(echo "$LINE1" | tr -dc '[:alnum:]_-')
+          [ -z "$CLEAN_NAME" ] && CLEAN_NAME="Custom"
+          OUTPUT_STL="Safety_Razor_Holder_${KNOT}mm_${CLEAN_NAME}.stl"
+          echo "OUTPUT_STL=$OUTPUT_STL" >> $GITHUB_ENV
+
+          python scripts/generate_custom.py \
+            --knot "$KNOT" \
+            --line1 "$LINE1" \
+            --line2 "$LINE2" \
+            --logo "$LOGO" \
+            --orientation "$ORIENTATION" \
+            --deboss "$DEBOSS" \
+            --output "$OUTPUT_STL"
+
+      - name: Upload Customized STL Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.OUTPUT_STL }}
+          path: ${{ env.OUTPUT_STL }}
+          retention-days: 14
+
+      - name: Write Job Summary
+        run: |
+          cat << 'EOF' >> $GITHUB_STEP_SUMMARY
+          ## 🪒 Customized Safety Razor & Shaving Brush Holder Generated!
+
+          | Parameter | Selected Value |
+          | :--- | :--- |
+          | **Knot Diameter** | `${{ env.KNOT }} mm` |
+          | **Primary Text** | `${{ env.LINE1 }}` |
+          | **Secondary Text** | `${{ env.LINE2 }}` |
+          | **Emblem Logo** | `${{ env.LOGO }}` |
+          | **Orientation** | `${{ env.ORIENTATION }}` |
+          | **Deboss Depth** | `${{ env.DEBOSS }} mm` |
+
+          ### 📦 Download Your Model
+          You can download **`${{ env.OUTPUT_STL }}`** from the **Artifacts** section at the top of this run page.
+
+          ### 💡 Slicing Recommendations (Bambu Studio / OrcaSlicer)
+          - **Orientation**: If Flat-Side is chosen, the 4.2° draft angle is mathematically corrected for full bed adhesion ($17.3\,\text{cm}^2$).
+          - **Walls**: Use **3 to 4 wall loops** to guarantee solid perimeters around the brush opening.
+          - **Supports**: **Tree (auto)** on build plate only.
+          - **Infill**: 15–20% Gyroid.
+          - **Material**: PETG recommended for moisture/soap resistance.
+          EOF

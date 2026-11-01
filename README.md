@@ -1,16 +1,24 @@
 # 🪒 Parametric Safety Razor & Shaving Brush Holder
 
+[![Live Web App](https://img.shields.io/badge/Live_WebApp-Interactive_Customizer-orange.svg)](https://tumesh007.github.io/safety-razor-holder-customizer/)
+[![GitHub Actions Cloud Compiler](https://img.shields.io/badge/GitHub_Actions-Cloud_STL_Compiler-blue.svg)](https://github.com/tumesh007/safety-razor-holder-customizer/actions/workflows/generate-model.yml)
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC_BY--NC--SA_4.0-lightgrey.svg)](LICENSE)
 [![Format: STEP & STL](https://img.shields.io/badge/CAD_Format-STEP_%26_STL-blue.svg)](models/)
 [![OpenSCAD Customizer](https://img.shields.io/badge/Parametric-OpenSCAD-brightgreen.svg)](customize_holder.scad)
 
-A high-speed, custom-fit 3D printable holder for traditional safety razors, shaving brushes, soap bowls, and replacement blades. 
+A high-speed, custom-fit 3D printable holder for traditional safety razors, shaving brushes, soap bowls, and replacement blades.
 
-This repository features:
-- **Fast-Print Flat-Side Orientation**: Cuts print time from **4h 15m down to 2h 28m (~40% faster)** by correcting the subtle 4.2° draft angle.
-- **Parametric OpenSCAD Customizer**: Adjust brush knot diameters ($22\,\text{mm}$ to $34\,\text{mm}$), dual-line personalized debossed text, and vector emblems.
-- **Solid Perimeter Generation**: Eliminates hand-filing and prevents ugly hollow infill cavities from being exposed.
-- **Pre-Rendered Models**: Ready-to-slice STLs and CAD STEP files for standard $24\,\text{mm}$, $28.5\,\text{mm}$, and $30\,\text{mm}$ shaving brushes.
+> **🌐 Live Interactive WebApp**: Customize your brush diameter, name debossing, and emblems with 3D preview in your browser at:  
+> **[https://tumesh007.github.io/safety-razor-holder-customizer/](https://tumesh007.github.io/safety-razor-holder-customizer/)**
+
+---
+
+### Key Features:
+- **Live 3D Customizer WebApp**: Hosted via GitHub Pages with real-time 3D preview of knot clearances, bottom debossing, and Bambu A1 Mini bed fit.
+- **Serverless Cloud STL Compiler (GitHub Actions)**: Customize and compile watertight STL models in ~30s on Ubuntu runners without installing OpenSCAD locally.
+- **Fast-Print Flat-Side Orientation**: Cuts print time from **4h 15m down to 2h 28m (~40% faster)** by mathematically cancelling the subtle 4.2° draft angle.
+- **Solid Concentric Perimeters**: Defining knot expansion in CAD ensures the slicer builds 3–4 solid outer wall loops, completely avoiding exposed hollow infill cavities caused by hand filing.
+- **Pre-Rendered Models Catalog**: Ready-to-slice STLs and CAD STEP files for standard $24\,\text{mm}$, $28.5\,\text{mm}$, and $30\,\text{mm}$ shaving brushes.
 - **Studio Rendering Pipeline**: Built-in FreeCAD & VTK PBR rendering script to generate publication-grade showcase images with zero GPU dependencies.
 
 ---
@@ -24,6 +32,30 @@ This repository features:
 | Personalized Bottom Branding (Debossed) | Fast-Print Flat-Side Bed Adhesion (PEI Plate) |
 | :---: | :---: |
 | ![Personalized Bottom Branding](docs/images/render_bottom_branding.png) | ![Fast-Print Bed Adhesion](docs/images/render_flatside_bed.png) |
+
+---
+
+## ⚡ How to Customize Your Model
+
+### Option 1: Live Web App (No Installation)
+Visit **[https://tumesh007.github.io/safety-razor-holder-customizer/](https://tumesh007.github.io/safety-razor-holder-customizer/)**:
+1. Drag the knot diameter slider ($22.0 - 34.0\,\text{mm}$) to match your brush.
+2. Enter your name and brush model for debossed engraving on the bottom plate.
+3. Select an emblem (Brush, Razor, Crown, Star).
+4. Click **"Generate STL via GitHub Actions"** or **"Export .SCAD"**.
+
+### Option 2: Cloud Generation via GitHub Actions
+Compile directly on GitHub's cloud runners:
+1. Navigate to the **[Actions Tab → Customize & Generate 3D Model](https://github.com/tumesh007/safety-razor-holder-customizer/actions/workflows/generate-model.yml)**.
+2. Click **Run workflow**.
+3. Choose your Knot Diameter, Owner Name, Brush Model, and Emblem.
+4. Click **Run workflow**. In ~30 seconds, download your custom STL from the workflow run artifacts!
+
+### Option 3: Local OpenSCAD GUI or CLI
+Open `customize_holder.scad` in [OpenSCAD](https://openscad.org/) or run:
+```bash
+python scripts/generate_custom.py --knot 28.5 --line1 "TUMESH" --line2 "30mm Silvertip" --logo "Brush"
+```
 
 ---
 
@@ -94,25 +126,6 @@ Production-ready models are available in both **STL** (3D printing) and **STEP**
 | **Recommended Material**| **PETG** (moisture and soap resistant) | **PETG** or **PLA+** |
 
 > **Tree Support Tip**: When slicing in Flat-Side orientation, tree supports will sprout exclusively to support the razor prong overhangs and the curved interior rim. They pop off cleanly with minimal post-processing.
-
----
-
-## 🛠️ OpenSCAD Customizer Guide
-
-Create a fully custom holder tailored to your exact brush model and personalized branding:
-
-1. Download and install [OpenSCAD](https://openscad.org/) (v2021.01 or newer).
-2. Open [`customize_holder.scad`](customize_holder.scad).
-3. If the customizer window is not visible, navigate to `Window` -> uncheck `Hide Customizer`.
-4. Adjust the parameters:
-   - **Knot Diameter**: Slider from $22.0\,\text{mm}$ to $34.0\,\text{mm}$.
-   - **Primary Text**: e.g., `"Tumesh"` (Font size 4–14 mm).
-   - **Secondary Text**: e.g., `"30mm Silvertip"` (Font size 3–10 mm).
-   - **Emblem / Logo**: Choose from `"Brush"`, `"Razor"`, `"Crown"`, `"Star"`, `"Custom_SVG"`, or `"None"`.
-   - **Custom SVG**: Place any monochrome `.svg` (like `my_logo.svg`) in the folder to engrave your personal maker mark.
-   - **Print Orientation**: Select `"Flat-Side (Fast 2.5h)"` or `"Upright (Standard 4.2h)"`.
-5. Press `F5` to preview and `F6` to render.
-6. Press `F7` or click `File -> Export as STL`.
 
 ---
 
