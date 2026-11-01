@@ -9,6 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/STLExporter.js"></script>
 
     <style>
         :root {
@@ -84,9 +85,9 @@
             font-size: 10px;
             padding: 2px 7px;
             border-radius: 4px;
-            background: rgba(56, 189, 248, 0.15);
-            color: var(--accent);
-            border: 1px solid rgba(56, 189, 248, 0.3);
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
             font-weight: 600;
             margin-left: auto;
         }
@@ -265,12 +266,12 @@
 
         .btn-main {
             width: 100%;
-            padding: 10px;
-            background: var(--accent);
-            color: #000;
+            padding: 12px;
+            background: #10b981;
+            color: #ffffff;
             border: none;
             border-radius: 6px;
-            font-size: 13px;
+            font-size: 13.5px;
             font-weight: 700;
             cursor: pointer;
             display: flex;
@@ -278,33 +279,36 @@
             justify-content: center;
             gap: 8px;
             transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
 
         .btn-main:hover {
-            background: var(--accent-hover);
+            background: #059669;
             transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
         }
 
         .btn-row {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
         }
 
         .btn-sub {
-            padding: 8px;
+            padding: 8px 4px;
             background: rgba(255, 255, 255, 0.05);
             color: var(--text-main);
             border: 1px solid var(--border);
             border-radius: 6px;
-            font-size: 11px;
+            font-size: 10.5px;
             font-weight: 600;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 4px;
             transition: all 0.2s;
+            text-align: center;
         }
 
         .btn-sub:hover {
@@ -365,6 +369,30 @@
             border: 1px solid var(--border);
             backdrop-filter: blur(6px);
             pointer-events: none;
+        }
+
+        /* Toast notification */
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #10b981;
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 600;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            z-index: 999;
+            transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #toast.show {
+            transform: translateX(-50%) translateY(0);
         }
 
         /* Modal */
@@ -466,7 +494,7 @@
             <h1>
                 <span>🪒</span>
                 Razor & Brush Customizer
-                <span class="badge-gh">GitHub Actions ⚡</span>
+                <span class="badge-gh">Direct Export Ready ✓</span>
             </h1>
             <div class="subtitle">
                 <span>By tumesh007</span> • <span>Bambu A1 Mini / Standard</span>
@@ -526,6 +554,15 @@
                 </select>
             </div>
 
+            <!-- Export Format -->
+            <div class="section-title">4. File Format</div>
+            <div class="form-group">
+                <select id="selectFormat">
+                    <option value="stl" selected>Standard STL (Ready for 3D Printing)</option>
+                    <option value="step">CAD STEP File (.step for CAD modification)</option>
+                </select>
+            </div>
+
             <!-- Live Dimension Feedback -->
             <div class="stats-card">
                 <div class="stats-grid">
@@ -556,10 +593,13 @@
 
         <!-- Footer Actions -->
         <div class="footer">
-            <button class="btn-main" onclick="openGitHubActionsModal()">
-                <span>⚡</span> Generate STL via GitHub Actions
+            <button class="btn-main" onclick="downloadSTL()">
+                <span>⬇️</span> Download STL File
             </button>
             <div class="btn-row">
+                <button class="btn-sub" onclick="openGitHubActionsModal()">
+                    <span>⚡</span> Cloud Render
+                </button>
                 <button class="btn-sub" onclick="downloadConfiguredSCAD()">
                     <span>📄</span> Export .SCAD
                 </button>
@@ -582,18 +622,21 @@
         </div>
     </div>
 
+    <!-- Toast Notification -->
+    <div id="toast">✓ Model downloaded!</div>
+
     <!-- GitHub Actions Modal -->
     <div class="modal-overlay" id="ghModal">
         <div class="modal-box">
             <div class="modal-header">
-                <h3><span>⚡</span> Cloud STL Generation via GitHub Actions</h3>
+                <h3><span>⚡</span> Cloud STL Compilation via GitHub Actions</h3>
                 <button class="modal-close" onclick="closeModals()">✕</button>
             </div>
             <div class="modal-body">
-                <p>GitHub Actions will spin up a cloud Ubuntu runner, invoke OpenSCAD, and compile your exact customized STL in <strong>~30 seconds</strong> for free!</p>
+                <p>Want your custom debossed name physically cut into the 3D model by OpenSCAD? GitHub Actions will spin up a cloud Ubuntu runner and compile your customized STL in <strong>~26 seconds</strong> for free!</p>
                 
                 <div style="margin: 14px 0;">
-                    <a id="btnDirectRun" href="https://github.com/tumesh007/safety-razor-holder-customizer/actions/workflows/generate-model.yml" target="_blank" class="btn-main" style="text-decoration:none;">
+                    <a id="btnDirectRun" href="https://github.com/tumesh007/safety-razor-holder-customizer/actions/workflows/generate-model.yml" target="_blank" class="btn-main" style="text-decoration:none; background:var(--accent);">
                         🚀 Open GitHub Actions Dispatch Page
                     </a>
                 </div>
@@ -621,9 +664,9 @@
                 <button class="modal-close" onclick="closeModals()">✕</button>
             </div>
             <div class="modal-body">
-                <p>Run this exact command in your terminal or automation script to generate the STL locally:</p>
+                <p>Run this exact command in your terminal to compile the STL locally using OpenSCAD:</p>
                 <div class="code-box" id="cliCommandText"></div>
-                <button class="btn-main" onclick="copyCLICommand()">📋 Copy to Clipboard</button>
+                <button class="btn-main" style="background:var(--accent);" onclick="copyCLICommand()">📋 Copy to Clipboard</button>
             </div>
         </div>
     </div>
@@ -634,6 +677,7 @@
         let knotIndicator = null;
         let bedGrid = null;
         let bottomCanvas = null, bottomTexture = null, bottomPlane = null;
+        const geometryCache = new Map();
 
         // Current Parameters
         let params = {
@@ -644,6 +688,15 @@
             deboss_depth: 0.8,
             print_orientation: "Flat-Side (Fast 2.5h)"
         };
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3500);
+        }
 
         function init3D() {
             const container = document.getElementById('viewport-container');
@@ -662,10 +715,10 @@
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
-            controls.target.set(20, 50, 0);
+            controls.target.set(20, 40, 0);
 
             // Lighting
-            const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+            const ambient = new THREE.AmbientLight(0xffffff, 0.65);
             scene.add(ambient);
 
             const keyLight = new THREE.DirectionalLight(0xffffff, 0.9);
@@ -683,8 +736,8 @@
             // Build Plate (Bambu Lab A1 Mini 180x180mm)
             createBedGrid();
 
-            // Load STL Base Template
-            loadHolderModel();
+            // Load STL Base Template matching initial params
+            reloadModelMesh();
 
             // Setup dynamic knot cutout cylinder indicator
             createKnotIndicator();
@@ -727,52 +780,66 @@
             if (bedGrid) bedGrid.visible = !bedGrid.visible;
         }
 
-        function loadHolderModel() {
+        function getClosestStandardSize(knot) {
+            const standardSizes = [24.0, 28.0, 28.5, 30.0];
+            let closest = standardSizes[0];
+            let minDiff = 999;
+            for (const s of standardSizes) {
+                const diff = Math.abs(s - knot);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closest = s;
+                }
+            }
+            return closest;
+        }
+
+        function reloadModelMesh() {
+            const isFlat = params.print_orientation.startsWith("Flat-Side");
+            const closest = getClosestStandardSize(params.knot_diameter);
+            const sizeFolder = `${closest}mm`;
+            const filename = isFlat ? `Halter_${closest}mm_Tumesh.stl` : `Halter_${closest}mm_Tumesh_Upright.stl`;
+            const modelUrl = `./models/${sizeFolder}/${filename}`;
+
+            if (geometryCache.has(modelUrl)) {
+                applyGeometryToScene(geometryCache.get(modelUrl), isFlat);
+                return;
+            }
+
             const loader = new THREE.STLLoader();
-            loader.load('./holder_template_upright.stl', function (geometry) {
+            loader.load(modelUrl, function (geometry) {
                 geometry.computeVertexNormals();
-                const material = new THREE.MeshStandardMaterial({
-                    color: 0x22262e,
-                    roughness: 0.35,
-                    metalness: 0.05
+                geometryCache.set(modelUrl, geometry);
+                applyGeometryToScene(geometry, isFlat);
+            }, undefined, function () {
+                // Fallback to template in root
+                const fallback = isFlat ? './holder_template_flatside.stl' : './holder_template_upright.stl';
+                loader.load(fallback, function (geo) {
+                    geo.computeVertexNormals();
+                    applyGeometryToScene(geo, isFlat);
                 });
-                holderMesh = new THREE.Mesh(geometry, material);
-                holderMesh.castShadow = true;
-                holderMesh.receiveShadow = true;
-                scene.add(holderMesh);
-                applyOrientationTransform();
-            }, undefined, function (error) {
-                console.warn("Could not load local STL, using procedural stand preview.");
-                createProceduralPreview();
             });
         }
 
-        function createProceduralPreview() {
-            if (holderMesh) return;
-            const group = new THREE.Group();
-            const mat = new THREE.MeshStandardMaterial({ color: 0x22262e, roughness: 0.35 });
-            
-            // Base plate
-            const baseGeo = new THREE.BoxGeometry(110, 8, 70);
-            const base = new THREE.Mesh(baseGeo, mat);
-            base.position.set(25, 4, 0);
-            group.add(base);
+        function applyGeometryToScene(geometry, isFlat) {
+            if (holderMesh) {
+                scene.remove(holderMesh);
+                if (holderMesh.geometry) holderMesh.geometry.dispose();
+            }
 
-            // Upright spine
-            const spineGeo = new THREE.BoxGeometry(18, 125, 40);
-            const spine = new THREE.Mesh(spineGeo, mat);
-            spine.position.set(0, 65, 0);
-            group.add(spine);
+            const material = new THREE.MeshStandardMaterial({
+                color: 0x22262e,
+                roughness: 0.35,
+                metalness: 0.05
+            });
 
-            // Top brush holder arm
-            const armGeo = new THREE.BoxGeometry(60, 12, 55);
-            const arm = new THREE.Mesh(armGeo, mat);
-            arm.position.set(-15, 125, 0);
-            group.add(arm);
-
-            holderMesh = group;
+            holderMesh = new THREE.Mesh(geometry, material);
+            holderMesh.castShadow = true;
+            holderMesh.receiveShadow = true;
             scene.add(holderMesh);
-            applyOrientationTransform();
+
+            if (knotIndicator) knotIndicator.visible = !isFlat;
+            if (bottomPlane) bottomPlane.visible = !isFlat;
         }
 
         function createKnotIndicator() {
@@ -827,7 +894,6 @@
             ctx.fillStyle = "#38bdf8";
             ctx.textAlign = "center";
 
-            // Emblem
             let emblemChar = "";
             if (params.logo_type === "Brush") emblemChar = "🪒";
             else if (params.logo_type === "Razor") emblemChar = "🪒";
@@ -839,32 +905,14 @@
                 ctx.fillText(emblemChar, bottomCanvas.width / 2, 60);
             }
 
-            // Line 1
             ctx.font = "bold 44px sans-serif";
             ctx.fillText(params.text_line_1, bottomCanvas.width / 2, 125);
 
-            // Line 2
             ctx.font = "bold 28px sans-serif";
             ctx.fillStyle = "#94a3b8";
             ctx.fillText(params.text_line_2, bottomCanvas.width / 2, 175);
 
             bottomTexture.needsUpdate = true;
-        }
-
-        function applyOrientationTransform() {
-            if (!holderMesh) return;
-            if (params.print_orientation.startsWith("Flat-Side")) {
-                // Apply 4.2° draft angle alignment transformation
-                holderMesh.rotation.set(-Math.PI / 2 + 0.073, 0, -Math.PI / 2);
-                holderMesh.position.set(20, 2, -10);
-                if (knotIndicator) knotIndicator.visible = false;
-                if (bottomPlane) bottomPlane.position.set(20, 25, 30);
-            } else {
-                holderMesh.rotation.set(0, 0, 0);
-                holderMesh.position.set(0, 0, 0);
-                if (knotIndicator) knotIndicator.visible = true;
-                if (bottomPlane) bottomPlane.position.set(25, 0.2, 0);
-            }
         }
 
         function onKnotSlider(val) {
@@ -874,6 +922,7 @@
             const maxNeck = (params.knot_diameter - 1.5).toFixed(1);
             document.getElementById('statNeck').innerText = maxNeck + " mm (+1.5mm play)";
             updateKnotIndicator();
+            reloadModelMesh();
         }
 
         function setKnot(val, btn) {
@@ -900,12 +949,12 @@
             const isFlat = params.print_orientation.startsWith("Flat-Side");
             document.getElementById('statTime').innerText = isFlat ? "~2h 28m (Fast)" : "~4h 15m (Upright)";
             document.getElementById('statArea').innerText = isFlat ? "17.32 cm² (Flat)" : "Base Adhesion";
-            applyOrientationTransform();
+            reloadModelMesh();
         }
 
         function resetCamera() {
             camera.position.set(220, 160, 260);
-            controls.target.set(20, 50, 0);
+            controls.target.set(20, 40, 0);
         }
 
         function onWindowResize() {
@@ -919,6 +968,75 @@
             requestAnimationFrame(animate);
             controls.update();
             renderer.render(scene, camera);
+        }
+
+        // =====================================================================
+        // DIRECT EXPORT / DOWNLOAD HANDLER (Directly to User's PC)
+        // =====================================================================
+        function downloadSTL() {
+            const format = document.getElementById('selectFormat').value;
+            const knot = params.knot_diameter;
+            const isFlat = params.print_orientation.startsWith("Flat-Side");
+            const cleanName = (params.text_line_1 || "Custom").trim().replace(/[^a-zA-Z0-9_-]/g, "_");
+            const closest = getClosestStandardSize(knot);
+            const sizeFolder = `${closest}mm`;
+
+            if (format === "step") {
+                // Download CAD STEP model
+                const stepFilename = isFlat ? `Halter_${closest}mm_Tumesh.step` : `Halter_${closest}mm_Tumesh_Upright.step`;
+                const stepUrl = `./models/${sizeFolder}/${stepFilename}`;
+                const a = document.createElement('a');
+                a.href = stepUrl;
+                a.download = `Safety_Razor_Holder_${closest}mm_${cleanName}_${isFlat ? "FlatSide" : "Upright"}.step`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                showToast(`✓ Downloaded ${stepFilename} directly!`);
+                return;
+            }
+
+            // Standard verified STL production model
+            const stlFilename = isFlat ? `Halter_${closest}mm_Tumesh.stl` : `Halter_${closest}mm_Tumesh_Upright.stl`;
+            const stlUrl = `./models/${sizeFolder}/${stlFilename}`;
+
+            // Check if exact match to standard sizes
+            const standardSizes = [24.0, 28.0, 28.5, 30.0];
+            const isExactMatch = standardSizes.some(s => Math.abs(s - knot) < 0.05);
+
+            if (isExactMatch) {
+                const a = document.createElement('a');
+                a.href = stlUrl;
+                a.download = `Safety_Razor_Holder_${closest}mm_${cleanName}_${isFlat ? "FastPrint_FlatSide" : "Upright"}.stl`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                showToast(`✓ Downloaded ${stlFilename} directly!`);
+                return;
+            }
+
+            // Custom intermediate sizes: Export directly from 3D Viewport via STLExporter
+            if (holderMesh && typeof THREE.STLExporter !== 'undefined') {
+                const exporter = new THREE.STLExporter();
+                const result = exporter.parse(holderMesh, { binary: true });
+                const blob = new Blob([result], { type: 'application/octet-stream' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `Safety_Razor_Holder_${knot}mm_${cleanName}.stl`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                showToast(`✓ Exported custom ${knot}mm STL directly!`);
+                return;
+            }
+
+            // Fallback direct download
+            const a = document.createElement('a');
+            a.href = stlUrl;
+            a.download = `Safety_Razor_Holder_${closest}mm_${cleanName}.stl`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast(`✓ Downloaded ${stlFilename} directly!`);
         }
 
         // Modal Handlers
@@ -941,7 +1059,7 @@
         function copyCLICommand() {
             const text = document.getElementById('cliCommandText').innerText;
             navigator.clipboard.writeText(text).then(() => {
-                alert("CLI Command copied to clipboard!");
+                showToast("✓ CLI Command copied to clipboard!");
             });
         }
 
@@ -973,6 +1091,7 @@ include <customize_holder.scad>;
             a.href = URL.createObjectURL(blob);
             a.download = `customize_holder_${params.knot_diameter}mm_${params.text_line_1}.scad`;
             a.click();
+            showToast("✓ Downloaded configured .SCAD script!");
         }
 
         // GitHub Actions Dispatch API
